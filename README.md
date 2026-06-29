@@ -35,8 +35,7 @@ provenance, diagnostics, feature importance, and statistical analysis.
 The raw dataset is not distributed with this repository. The preprocessing
 pipeline expects it at `data/NPD_v1.csv`. The data are described in Fiva,
 Nedregård, and Øien (2025), [The Norwegian Parliamentary Debates
-Dataset](https://doi.org/10.1038/s41597-024-04142-x). The corresponding BibTeX
-entry is available in [`CITATION.bib`](CITATION.bib).
+Dataset](https://doi.org/10.1038/s41597-024-04142-x).
 
 ## Current Scope
 
