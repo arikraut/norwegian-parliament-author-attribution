@@ -1,0 +1,54 @@
+[experiment]
+kind = "baseline"
+seed = 42
+
+[materialization]
+config_path = "data_pipeline/configs/materializations/bokmal_authorwise_char_word_stylo.toml"
+
+[oracle_source]
+config_path = "models/configs/profiling/bokmal_ground_truth_signal_injection.toml"
+
+[dev]
+experiment_name = "bokmal_authorwise_linear_svm_with_oracle_profiling"
+selection_metric = "macro_f1"
+save_prediction_top_k = 5
+n_jobs = 3
+
+[final]
+experiment_name = "bokmal_authorwise_final_linear_svm_with_oracle_profiling"
+save_prediction_top_k = 5
+n_jobs = 3
+selected_candidates_path = "results/models/bokmal_authorwise/bokmal_authorwise_linear_svm_with_oracle_profiling/seed_42/selected_candidates.json"
+
+[fit]
+max_iter = 20000
+tol = 0.0001
+dual = "auto"
+top_k = [3, 5]
+
+[search]
+C_values = [1.0, 10.0]
+class_weights = ["balanced"]
+
+[[conditions]]
+id = "char_word_oracle_profiling_all"
+label = "char_word_oracle_profiling_all"
+feature_set = "char_word_oracle_profiling_all"
+blocks = ["char", "word", "profiling_oracle"]
+normalize_rows = true
+
+[[conditions]]
+id = "word_only_oracle_profiling_all"
+label = "word_only_oracle_profiling_all"
+feature_set = "word_only_oracle_profiling_all"
+blocks = ["word", "profiling_oracle"]
+normalize_rows = true
+
+[[conditions]]
+id = "char_word_stylo_downweighted_oracle_profiling_all"
+label = "char_word_stylo_downweighted_oracle_profiling_all"
+feature_set = "char_word_stylo_downweighted_oracle_profiling_all"
+blocks = ["char", "word", "stylo", "profiling_oracle"]
+normalize_rows = true
+normalize_each_block = true
+block_weights = { char = 1.0, word = 1.0, stylo = 0.25, profiling_oracle = 1.0 }

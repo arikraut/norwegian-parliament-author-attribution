@@ -1,0 +1,68 @@
+[experiment]
+kind = "stacked"
+seed = 42
+
+[materialization]
+config_path = "data_pipeline/configs/materializations/bokmal_authorwise_char_word_stylo.toml"
+
+[oracle_source]
+config_path = "models/configs/profiling/bokmal_ground_truth_signal_injection.toml"
+
+[dev]
+experiment_name = "bokmal_authorwise_stacked_with_oracle_profiling"
+selection_metric = "macro_f1"
+save_prediction_top_k = 5
+n_jobs = 3
+
+[final]
+experiment_name = "bokmal_authorwise_final_stacked_with_oracle_profiling"
+save_prediction_top_k = 5
+n_jobs = 3
+selected_candidates_path = "results/models/bokmal_authorwise/bokmal_authorwise_stacked_with_oracle_profiling/seed_42/selected_candidates.json"
+
+[fit]
+inner_cv = 3
+max_iter = 20000
+tol = 0.0001
+dual = "auto"
+top_max_iter = 1000
+top_k = [3, 5]
+
+[search]
+base_c_values = [10.0]
+class_weights = ["balanced"]
+top_c_values = [1.0, 10.0]
+
+[[families]]
+name = "char"
+blocks = ["char"]
+
+[[families]]
+name = "word"
+blocks = ["word"]
+
+[[families]]
+name = "stylo"
+blocks = ["stylo"]
+
+[[conditions]]
+id = "char_word__oracle_all"
+label = "char_word__oracle_all"
+families = ["char", "word"]
+profiling_blocks = [
+    "profiling_oracle_party",
+    "profiling_oracle_female",
+    "profiling_oracle_age_bin",
+    "profiling_oracle_left_center_right",
+]
+
+[[conditions]]
+id = "char_word_stylo__oracle_all"
+label = "char_word_stylo__oracle_all"
+families = ["char", "word", "stylo"]
+profiling_blocks = [
+    "profiling_oracle_party",
+    "profiling_oracle_female",
+    "profiling_oracle_age_bin",
+    "profiling_oracle_left_center_right",
+]

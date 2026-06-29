@@ -1,0 +1,13 @@
+[data]
+splits_dir = "data/splits"
+
+[source]
+attribution_split_name = "bokmal_authorwise"
+# Canonical oracle target order for standalone injection and staged attribution.
+targets = ["party", "female", "age_bin", "left_center_right"]
+
+[stages.dev]
+attribution_materialization_name = "bokmal_authorwise_dev_char_word_stylo"
+
+[stages.final]
+attribution_materialization_name = "bokmal_authorwise_final_char_word_stylo"

@@ -1,0 +1,30 @@
+[experiment]
+name = "bokmal_profiling_smoke_linear_svm"
+seed = 42
+selection_metric = "macro_f1"
+save_prediction_top_k = 3
+
+[data]
+splits_dir = "data/splits"
+results_dir = "results/models"
+artifacts_dir = "models/artifacts/profiling"
+
+[source]
+split_name = "bokmal_profiling_smoke"
+materialization_name = "bokmal_profiling_smoke_char_word_stylo"
+units = "all"
+
+targets = ["party", "female", "age_bin", "left_center_right"]
+
+[model]
+family   = "linear_svm"
+C_values = [1.0]
+max_iter = 20000
+tol      = 0.0001
+dual     = "auto"
+
+[[feature_sets]]
+name = "char_word_stylo"
+blocks = ["char", "word", "stylo"]
+normalize_rows = true
+normalize_each_block = true

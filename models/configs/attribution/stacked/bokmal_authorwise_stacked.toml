@@ -1,0 +1,85 @@
+[experiment]
+kind = "stacked"
+seed = 42
+
+[materialization]
+config_path = "data_pipeline/configs/materializations/bokmal_authorwise_char_word_stylo.toml"
+
+[dev]
+experiment_name = "bokmal_authorwise_stacked"
+selection_metric = "macro_f1"
+save_prediction_top_k = 5
+n_jobs = 3
+
+[final]
+experiment_name = "bokmal_authorwise_final_stacked"
+save_prediction_top_k = 5
+n_jobs = 3
+selected_candidates_path = "results/models/bokmal_authorwise/bokmal_authorwise_stacked/seed_42/selected_candidates.json"
+
+[fit]
+inner_cv = 3
+max_iter = 20000
+tol = 0.0001
+dual = "auto"
+top_max_iter = 1000
+top_k = [3, 5]
+
+[search]
+base_c_values = [0.1, 1.0, 10.0]
+class_weights = ["balanced"]
+top_c_values = [0.1, 1.0, 10.0]
+
+[[families]]
+name = "char"
+blocks = ["char"]
+
+[[families]]
+name = "word"
+blocks = ["word"]
+
+[[families]]
+name = "stylo"
+blocks = ["stylo"]
+
+[[conditions]]
+id = "char_only"
+label = "char_only"
+families = ["char"]
+profiling_blocks = []
+
+[[conditions]]
+id = "word_only"
+label = "word_only"
+families = ["word"]
+profiling_blocks = []
+
+[[conditions]]
+id = "stylo_only"
+label = "stylo_only"
+families = ["stylo"]
+profiling_blocks = []
+
+[[conditions]]
+id = "char_word"
+label = "char_word"
+families = ["char", "word"]
+profiling_blocks = []
+
+[[conditions]]
+id = "char_stylo"
+label = "char_stylo"
+families = ["char", "stylo"]
+profiling_blocks = []
+
+[[conditions]]
+id = "word_stylo"
+label = "word_stylo"
+families = ["word", "stylo"]
+profiling_blocks = []
+
+[[conditions]]
+id = "char_word_stylo"
+label = "char_word_stylo"
+families = ["char", "word", "stylo"]
+profiling_blocks = []

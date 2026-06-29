@@ -1,0 +1,52 @@
+# Phase 3A smoke config: dev-only staged baseline SVM with smoke profiling signals.
+
+[experiment]
+kind = "baseline"
+seed = 42
+
+[materialization]
+config_path = "data_pipeline/configs/materializations/bokmal_authorwise_smoke.toml"
+
+[dev]
+experiment_name = "bokmal_authorwise_smoke_linear_svm_with_profiling"
+selection_metric = "macro_f1"
+save_prediction_top_k = 3
+n_jobs = 3
+
+[fit]
+max_iter = 20000
+tol = 0.0001
+dual = "auto"
+top_k = [3]
+
+[search]
+C_values = [0.1, 1.0]
+class_weights = ["none", "balanced"]
+
+[profiling_source]
+profiling_split_name = "bokmal_profiling_smoke"
+profiling_materialization_name = "bokmal_profiling_smoke_char_word_stylo"
+profiling_experiment_name = "bokmal_profiling_smoke_linear_svm"
+profiling_seed = 42
+targets = ["party", "female", "age_bin", "left_center_right"]
+
+[[conditions]]
+id = "char_word"
+label = "char_word"
+feature_set = "char_word"
+blocks = ["char", "word"]
+normalize_rows = true
+
+[[conditions]]
+id = "char_word_profiling_party"
+label = "char_word_profiling_party"
+feature_set = "char_word_profiling_party"
+blocks = ["char", "word", "profiling_party"]
+normalize_rows = true
+
+[[conditions]]
+id = "char_word_profiling_all"
+label = "char_word_profiling_all"
+feature_set = "char_word_profiling_all"
+blocks = ["char", "word", "profiling"]
+normalize_rows = true

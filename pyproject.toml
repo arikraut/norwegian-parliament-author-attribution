@@ -1,0 +1,20 @@
+[project]
+name = "norwegian-parliament-author-attribution"
+version = "0.1.0"
+description = "Data pipelines and classical models for authorship attribution and profiling on Norwegian parliamentary debates."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "matplotlib>=3.10.7",
+    "pandas>=2.3.3",
+    "scikit-learn>=1.7.2",
+    "seaborn>=0.13.2",
+    "spacy>=3.8.9",
+    "stopwordsiso>=0.6.1",
+    "textdescriptives>=2.8.4",
+]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.0.1",
+]

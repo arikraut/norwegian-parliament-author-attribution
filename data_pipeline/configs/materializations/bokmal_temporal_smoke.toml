@@ -1,0 +1,35 @@
+[materialization]
+split_name = "bokmal_temporal_smoke"
+row_feature_name = "bokmal_temporal_smoke"
+
+[data]
+splits_dir = "data/splits"
+
+[stages.dev]
+name = "bokmal_temporal_smoke_char_word_stylo"
+selector = "all"
+
+[blocks]
+enabled = ["char", "word", "stylo"]
+
+[word_tfidf]
+min_n = 1
+max_n = 3
+min_df = 2
+max_df = 1.0
+max_features = 50000
+
+[char_tfidf]
+min_n = 2
+max_n = 5
+min_df = 2
+max_df = 1.0
+max_features = 50000
+
+[stylometry]
+scaler = "standard"
+with_mean = true
+with_std = true
+drop_zero_variance_columns = true
+drop_low_variance_columns = false
+variance_threshold = 1e-12

@@ -1,0 +1,35 @@
+[split]
+name = "bokmal_temporal"
+experiment_name = "split_bokmal_temporal"
+selection_seed = 42
+
+[data]
+source_dataset = "data/clean/stortinget_bokmal_only.csv"
+splits_dir = "data/splits"
+results_dir = "results/splits"
+
+[outer_split]
+strategy = "election_based"
+train = [2005, 2009, 2013, 2017]
+test = [2021]
+n_test_speeches = 100
+
+[folds]
+mode = "expanding"
+min_train_periods = 1
+coverage_policy = "filter_authors"
+min_chars_per_fold_election = 1000
+
+[eligibility]
+min_train_chars_per_author = 150000
+min_test_speeches_per_author = 100
+
+[pool]
+party_mode = "all"
+language_mode = "bokmal_only"
+bokmal_codes = ["Bokmål"]
+min_authors_per_party = 1
+
+[selection]
+mode = "all_eligible"
+ranking_metric = "train_chars"

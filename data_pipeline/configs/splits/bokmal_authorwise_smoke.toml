@@ -1,0 +1,35 @@
+[split]
+name = "bokmal_authorwise_smoke"
+experiment_name = "attribution_bokmal_authorwise"
+selection_seed = 42
+
+[data]
+source_dataset = "data/clean/stortinget_bokmal_only.csv"
+splits_dir = "data/splits"
+results_dir = "results/splits"
+
+[outer_split]
+strategy = "fixed_test_speeches"
+n_test_speeches = 10
+
+[folds]
+mode = "kfold"
+n_splits = 2
+coverage_policy = "filter_authors"
+min_train_chars_per_author = 0
+min_val_chars_per_author = 0
+
+[eligibility]
+min_train_chars_per_author = 30000
+
+[pool]
+party_mode = "all"
+language_mode = "bokmal_only"
+bokmal_codes = ["Bokmål"]
+min_authors_per_party = 1
+
+[selection]
+mode = "total"
+n_authors_total = 5
+ranking_metric = "train_chars"
+strategy = "top_chars"

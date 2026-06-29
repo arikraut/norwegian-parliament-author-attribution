@@ -1,0 +1,47 @@
+# Smoke profiling split: 6 non-attribution Bokmål authors, 2 folds.
+# Used for smoke testing only — not for production profiling results.
+#
+# Excludes only the 5 smoke attribution authors. Dev attribution authors
+# are not excluded here, which is acceptable for smoke (we are testing
+# code paths, not producing valid profiling models).
+#
+# Run via:
+#   python run_phase2_pipeline.py --smoke
+
+[split]
+name = "bokmal_profiling_smoke"
+experiment_name = "profiling_bokmal_smoke"
+selection_seed = 42
+
+[data]
+source_dataset = "data/clean/stortinget_bokmal_only.csv"
+splits_dir = "data/splits"
+results_dir = "results/splits"
+
+[exclusion]
+# Exclude the 5 smoke attribution authors from the profiling pool.
+attribution_authors_path = "data/splits/bokmal_authorwise_smoke/authors.csv"
+
+[outer_split]
+strategy = "grouped_authors"
+
+[folds]
+mode = "stratified_group_kfold"
+n_splits = 2
+stratify_by = "party"
+
+[pool]
+party_mode = "list"
+chosen_parties = ["Ap", "H", "V"]
+language_mode = "bokmal_only"
+bokmal_codes = ["Bokmål"]
+min_authors_per_party = 2
+
+[selection]
+# Take two high-volume non-attribution authors from each listed party.
+# This keeps the 2-fold grouped smoke split tiny while making party, gender,
+# age-bin, and political-axis labels trainable in both folds.
+mode = "per_party"
+n_authors_per_party = 2
+ranking_metric = "total_chars_all"
+strategy = "top_chars"

@@ -1,0 +1,60 @@
+# NorBERT3 profiling classifier — single-task per target.
+# Trains one model per target (listed in [source].targets).
+# Hyperparameters match the NorBERT3 paper fine-tuning setup for
+# document-level and sentence-level sentiment analysis.
+
+[experiment]
+name             = "bokmal_dev_norbert3_profiling"
+seed             = 42
+selection_metric = "macro_f1"
+
+[data]
+splits_dir    = "data/splits"
+results_dir   = "results/models"
+artifacts_dir = "models/artifacts/profiling"
+
+[source]
+split_name = "bokmal_profiling"
+targets    = ["female", "age_bin", "party", "left_right", "left_center_right", "left_center-left_center-right_right"]
+
+[age_bins]
+edges  = [0, 50, 200]
+labels = ["<50", "50+"]
+
+# Binary axis — left vs right.
+[[party_axes]]
+name  = "left_right"
+left  = ["Ap", "SV", "Sp"]
+right = ["H", "FrP", "V", "KrF"]
+
+# Ternary axis — left / center / right.
+[[party_axes]]
+name   = "left_center_right"
+left   = ["Ap", "SV"]
+center = ["Sp", "V", "KrF"]
+right  = ["H", "FrP"]
+
+# Quaternary axis — left / center-left / center-right / right.
+[[party_axes]]
+name         = "left_center-left_center-right_right"
+left         = ["SV"]
+center_left  = ["Ap", "Sp"]
+center_right = ["V", "KrF", "H"]
+right        = ["FrP"]
+
+[model]
+family          = "bert_profiling"
+pretrained_name = "ltg/norbert3-base"
+max_length      = 512
+
+[truncation]
+pairs = [[128, 382]]
+
+[training]
+learning_rate      = 1e-5
+epochs             = 5
+batch_size         = 16
+weight_decay       = 0.01
+hidden_dropout     = 0.1
+attention_dropout  = 0.1
+max_speeches_per_author = 0   # 0 = use all speeches

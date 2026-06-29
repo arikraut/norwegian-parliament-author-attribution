@@ -1,0 +1,35 @@
+[materialization]
+split_name = "bokmal_profiling"
+row_feature_name = "bokmal_profiling"
+
+[data]
+splits_dir = "data/splits"
+
+[stages.dev]
+name = "bokmal_profiling_char_word_stylo"
+selector = "all"
+
+[blocks]
+enabled = ["char", "word", "stylo"]
+
+[word_tfidf]
+min_n = 1
+max_n = 3
+min_df = 5
+max_df = 1.0
+max_features = 100000
+
+[char_tfidf]
+min_n = 2
+max_n = 5
+min_df = 5
+max_df = 1.0
+max_features = 100000
+
+[stylometry]
+scaler = "standard"
+with_mean = true
+with_std = true
+drop_zero_variance_columns = true
+drop_low_variance_columns = false
+variance_threshold = 1e-12

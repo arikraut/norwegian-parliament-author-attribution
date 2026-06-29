@@ -1,0 +1,48 @@
+# BERT profiling signal extractor.
+# Applies trained BERT profiling models to attribution speeches.
+# Run after bert_profiling.py --mode final has completed.
+
+[data]
+splits_dir    = "data/splits"
+artifacts_dir = "models/artifacts/profiling"
+
+[source]
+attribution_split_name    = "bokmal_authorwise"
+profiling_split_name      = "bokmal_profiling"
+profiling_experiment_name = "bokmal_dev_norbert3_profiling"
+profiling_seed            = 42
+targets                   = ["female", "age_bin", "party", "party_binary", "left_center_right", "party_multiclass"]
+materialization_name      = "bokmal_authorwise_bert_profiling"
+
+[model]
+family          = "bert_profiling"
+pretrained_name = "ltg/norbert3-base"
+max_length      = 512
+
+[truncation]
+pairs = [[128, 382]]
+
+[age_bins]
+edges  = [0, 50, 200]
+labels = ["<50", "50+"]
+
+# Binary axis — left vs right.
+[[party_axes]]
+name  = "left_right"
+left  = ["Ap", "SV", "Sp"]
+right = ["H", "FrP", "V", "KrF"]
+
+# Ternary axis — left / center / right.
+[[party_axes]]
+name   = "left_center_right"
+left   = ["Ap", "SV"]
+center = ["Sp", "V", "KrF"]
+right  = ["H", "FrP"]
+
+# Quaternary axis — left / center-left / center-right / right.
+[[party_axes]]
+name         = "left_center-left_center-right_right"
+left         = ["SV"]
+center_left  = ["Ap", "Sp"]
+center_right = ["V", "KrF", "H"]
+right        = ["FrP"]

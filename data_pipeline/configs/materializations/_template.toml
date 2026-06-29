@@ -1,0 +1,74 @@
+# MATERIALIZATION CONFIGURATION TEMPLATE
+# ========================================
+# Materialization converts row-level features into fold-specific feature matrices.
+# Fitting (TF-IDF vocabulary, scalers) always happens on fold-train data only to
+# prevent leakage. The same fitted preprocessors transform val and test data.
+
+[materialization]
+# The split bundle to materialize features for.
+split_name = "bokmal_authorwise"
+# The row feature set to load as input.
+# Must match an existing entry under data/splits/<split_name>/row_features/.
+row_feature_name = "bokmal_authorwise"
+
+[data]
+# Root directory for split bundles.
+splits_dir = "data/splits"
+
+[stages.dev]
+# Development materializes every fold from memberships/folds.csv and uses
+# eval_role = "val" for model selection.
+name = "bokmal_authorwise_dev_char_word_stylo"
+selector = "all"
+
+# Final materializes one outer train/test unit from memberships/outer.csv and
+# uses eval_role = "test". Omit this section for configs that only support dev.
+[stages.final]
+name = "bokmal_authorwise_final_char_word_stylo"
+selector = "final"
+
+[blocks]
+# Feature blocks written as train/eval matrices.
+# Options: any subset of ["char", "word", "stylo"]
+# Profiling/oracle blocks are derived later by model-side signal stages and
+# recorded in the materialization manifest; they are not listed here.
+enabled = ["char", "word", "stylo"]
+
+[word_tfidf]
+# Minimum word n-gram size.
+min_n = 1
+# Maximum word n-gram size.
+max_n = 3
+# Minimum document frequency for a term to be included in the vocabulary.
+# Integer = absolute count; float = fraction of documents.
+min_df = 5
+# Maximum document frequency. Terms appearing in more than this fraction of
+# documents are excluded (removes corpus-wide stopwords).
+max_df = 1.0
+# Hard cap on vocabulary size. The top-scoring terms by TF-IDF are kept.
+# Set to null to disable the cap.
+max_features = 100000
+
+[char_tfidf]
+# Minimum character n-gram size.
+min_n = 2
+# Maximum character n-gram size.
+max_n = 5
+min_df = 5
+max_df = 1.0
+max_features = 100000
+
+[stylometry]
+# Scaler applied to stylometric features after fold-train fitting.
+# Supported value: "standard" (zero mean, unit variance).
+scaler = "standard"
+# Whether to subtract the mean during standardisation.
+with_mean = true
+# Whether to divide by the standard deviation during standardisation.
+with_std = true
+# Drop columns whose variance on fold-train data is exactly zero.
+drop_zero_variance_columns = true
+# Drop columns whose variance on fold-train data is below variance_threshold.
+drop_low_variance_columns = false
+# Variance threshold used when drop_low_variance_columns = true.
+variance_threshold = 1e-12

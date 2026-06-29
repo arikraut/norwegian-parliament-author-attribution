@@ -1,0 +1,161 @@
+# SPLIT CONFIGURATION TEMPLATE
+# ==============================
+# A split bundle defines which authors are included, how their speeches are
+# assigned to outer roles, and how inner cross-validation folds are built.
+#
+# Four outer-split strategies are supported:
+#   "author_percentage" — each author is split chronologically by target
+#                         character proportions. Available variant, not active main split.
+#   "fixed_test_speeches" — each author's N latest speeches go to test;
+#                           all earlier speeches go to train. For authorwise splits.
+#   "election_based"      — speeches are assigned by election year. For temporal splits.
+#   "grouped_authors"     — selected profiling authors are assigned to train;
+#                           author-disjoint validation comes from grouped folds.
+#
+# This template uses "fixed_test_speeches". Fields that only apply to
+# "election_based" are shown as commented examples below.
+
+[split]
+# Unique identifier for this split. Used as the directory name under data/splits/.
+name = "bokmal_authorwise"
+# Human-readable label for the experiment family. Stored in split metadata.
+experiment_name = "attribution_bokmal_authorwise"
+# Seed used by fold builders that need deterministic shuffled grouping.
+selection_seed = 42
+
+[data]
+# Path to the cleaned source corpus CSV, relative to the project root.
+source_dataset = "data/clean/stortinget_bokmal_only.csv"
+# Root directory where generated split bundles are written.
+splits_dir = "data/splits"
+# Root directory for split summary reports.
+results_dir = "results/splits"
+
+# [exclusion]
+# Required for grouped_authors profiling splits. Authors listed in the given file
+# are unconditionally removed from the candidate pool before selection, and the
+# selected profiling authors are checked against this file before artifacts are written.
+#
+# Path to the authors.csv file of the split whose authors should be excluded.
+# attribution_authors_path = "data/splits/bokmal_authorwise/authors.csv"
+
+[outer_split]
+# Which strategy to use for assigning outer roles.
+# Options: "author_percentage", "fixed_test_speeches", "election_based", "grouped_authors"
+strategy = "fixed_test_speeches"
+
+# --- author_percentage fields ---
+# Target character proportions per author. Speeches stay whole, so realized
+# shares can only approximate the configured target.
+# train = 0.80
+# test = 0.20
+
+# --- fixed_test_speeches fields ---
+# Number of speeches per author reserved for the outer test set.
+# The N chronologically latest speeches go to test; all earlier speeches go to train.
+# Authors with fewer total speeches than this value are dropped by the eligibility filter.
+n_test_speeches = 100
+
+# --- election_based fields (comment out fixed_test_speeches fields above) ---
+# List of election years (integers) whose speeches are assigned to the train role.
+# train = [2001, 2005, 2009, 2013, 2017]
+# Election years for the test role.
+# test = [2021]
+# Optional latest-N cap for the temporal test role. When set, reported test
+# support and corpus/test.csv both use only the latest N test-election speeches
+# per author.
+# n_test_speeches = 100
+
+# --- grouped_authors fields (comment out fixed_test_speeches fields above) ---
+# No additional outer-split fields are used. All selected profiling authors are
+# assigned to train; author-disjoint validation is configured in [folds].
+
+[folds]
+# Inner cross-validation fold strategy applied to the outer train partition.
+# Options:
+#   "none"      — no inner folds; used for final evaluation splits.
+#   "kfold"     — author-wise chronological k-fold partitioning.
+#   "expanding" — temporal election-period growing-window folds.
+#   "stratified_group_kfold" — author-disjoint profiling folds stratified by metadata.
+mode = "kfold"
+
+# Which outer speeches feed author-wise or temporal fold construction.
+# Only "train_only" is supported where this field is used; it is also the default.
+# source = "train_only"
+
+# Number of inner folds. Ignored when mode = "none".
+n_splits = 5
+
+# What to do when an author lacks sufficient data across all folds.
+# Options:
+#   "filter_authors" — drop authors who cannot satisfy the per-fold minimums.
+#   "grouped_author_holdout" — profiling folds intentionally hold out whole authors.
+coverage_policy = "filter_authors"
+
+# Minimum characters an author must contribute to a fold's train partition.
+# Set to 0 to disable the check.
+min_train_chars_per_author = 0
+
+# Minimum characters an author must contribute to a fold's val partition.
+# Set to 0 to disable the check.
+min_val_chars_per_author = 0
+
+# --- election_based fold fields ---
+# Minimum number of training election periods that must precede a fold.
+# min_train_periods = 2
+# Minimum characters per author per election period in a fold (filter_authors mode only).
+# min_chars_per_fold_election = 1000
+
+# --- grouped_authors fold fields ---
+# mode = "stratified_group_kfold"
+# stratify_by = "party"
+
+[eligibility]
+# Required for attribution split strategies. Omit this section for grouped_authors profiling splits.
+# Minimum characters an author must have in their outer train partition. Held-out
+# test support is reported after writing and is not used for attribution
+# selection eligibility.
+min_train_chars_per_author = 150000
+# Optional temporal evaluation guard. When outer_split.n_test_speeches caps the
+# temporal test role, this keeps only authors with at least this many capped
+# outer-test speeches.
+# min_test_speeches_per_author = 100
+
+[pool]
+# Pre-selection filter by party membership.
+# Options: "all" (no restriction), "list" (restrict to chosen_parties)
+party_mode = "all"
+# List of party abbreviations to include. Only used when party_mode = "list".
+# chosen_parties = ["Ap", "H", "FrP", "Sp", "SV"]
+# Pre-selection filter by the author's majority language.
+# Options: "both" (no restriction), "bokmal_only"
+language_mode = "bokmal_only"
+# Language label strings that count as Bokmål. Must match values in the corpus.
+bokmal_codes = ["Bokmål"]
+# Drop parties that have fewer than this many eligible authors.
+# Prevents tiny parties from being represented. Set to 0 to disable.
+min_authors_per_party = 4
+
+[selection]
+# How to determine which authors from the eligible pool are included in the split.
+# Options:
+#   "all_eligible" — include every eligible author (ignores n_authors_total/n_authors_per_party).
+#   "total"        — select exactly n_authors_total authors from the pool.
+#   "per_party"    — select n_authors_per_party from each qualifying party.
+mode = "total"
+
+# Total number of authors to select. Only used when mode = "total".
+n_authors_total = 50
+
+# Number of authors to select per party. Only used when mode = "per_party".
+# n_authors_per_party = 5
+
+# Column used to rank authors before selection. Attribution configs should use
+# train-side support; total/test support columns are diagnostics after the split.
+ranking_metric = "train_chars"
+
+# How to pick from the ranked candidate pool.
+# Options:
+#   "top_chars"         — highest-ranked authors first.
+#   "alternate_parties" — round-robin across parties, highest-ranked first within each.
+strategy = "alternate_parties"

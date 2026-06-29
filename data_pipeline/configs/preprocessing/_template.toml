@@ -1,0 +1,104 @@
+# PREPROCESSING CONFIGURATION TEMPLATE
+# ====================================
+# Defines how the raw NPD corpus is cleaned into downstream corpus views.
+# Copy this file, adjust the values, and pass the new config with:
+#   python data_pipeline/preprocessing.py --config path/to/config.toml
+
+[paths]
+# Raw NPD CSV, relative to the project root.
+input = "data/NPD_v1.csv"
+# Recombined cleaned corpus where each speaker keeps only their majority language.
+majority_output = "data/clean/stortinget_majority_language_only.csv"
+# Directory for dataset summary tables for the majority-language corpus.
+dataset_results_dir = "results/dataset"
+
+[pipeline]
+# Minimum number of whitespace-delimited words required after normalization.
+min_words = 150
+# Earliest election year retained in the cleaned corpus.
+min_election_year = 2001
+# Parties below this word-share percentage are grouped as "Andre".
+small_party_min_word_pct = 5.0
+# Language labels that can be retained in language-specific corpus views.
+supported_languages = ["Bokmål", "Nynorsk"]
+# Majority-language tie breaker when a speaker has equal support in several languages.
+majority_language_tie_breaker = "Nynorsk"
+
+[[language_outputs]]
+# Named cleaned corpus view. Referenced by notebooks and downstream scripts.
+name = "bokmal_only"
+language = "Bokmål"
+path = "data/clean/stortinget_bokmal_only.csv"
+# Optional summary directory for this view.
+dataset_results_dir = "results/dataset_bokmal"
+
+[[language_outputs]]
+name = "nynorsk_only"
+language = "Nynorsk"
+path = "data/clean/stortinget_nynorsk_only.csv"
+
+[schema]
+# Column order for cleaned corpus outputs.
+final_columns = [
+    "date",
+    "time",
+    "election",
+    "id_speech",
+    "id_person",
+    "name",
+    "age",
+    "female",
+    "party",
+    "partyname",
+    "language",
+    "text",
+]
+# Rows missing these columns are removed before downstream profiling.
+profile_required_columns = ["age", "party"]
+
+[procedural]
+# Raw-corpus status column used for president/procedural filtering.
+status_column = "status"
+# Boolean procedural marker column.
+procedural_column = "procedural"
+# Lower-cased status values removed before downstream filtering.
+excluded_statuses = ["president", "presidenten"]
+
+[deduplication]
+# Columns defining duplicate speeches.
+key_columns = ["id_person", "date", "time", "text"]
+
+[redaction]
+# Tokens used when speaker names and party names are replaced in text.
+name_token = "<NAME>"
+party_token = "<PARTY>"
+# Speaker-name source columns used for redaction.
+name_columns = ["name", "name_original"]
+# Shorter name parts are ignored to avoid replacing common words.
+name_part_min_length = 2
+# Short codes such as H, R, and V are omitted because they are too short to
+# redact safely without replacing ordinary Norwegian words or letters.
+party_codes = ["Ap", "FrP", "KrF", "Kp", "MDG", "Pf", "SV", "Sp"]
+
+[redaction.party_aliases_by_code]
+# Party names and common language variants redacted by party code.
+ap = ["Arbeiderpartiet", "Arbeidarpartiet"]
+frp = ["Fremskrittspartiet", "Framstegspartiet"]
+h = ["Høyre", "Høgre"]
+krf = ["Kristelig Folkeparti", "Kristeleg Folkeparti"]
+kp = ["Kystpartiet"]
+mdg = ["Miljøpartiet De Grønne", "Miljøpartiet Dei Grøne"]
+pf = ["Pasientfokus"]
+r = ["Rødt", "Raudt"]
+sp = ["Senterpartiet"]
+sv = ["Sosialistisk Venstreparti"]
+v = ["Venstre"]
+
+[metadata.manual_party_fixes]
+# Reviewed mappings from lower-cased party-name metadata to party codes.
+"fremskrittspartiet" = "FrP"
+"rødt" = "R"
+"miljøpartiet de grønne" = "MDG"
+"pasientfokus" = "Pf"
+"kystpartiet" = "Kp"
+"arbeiderpartiet" = "Ap"

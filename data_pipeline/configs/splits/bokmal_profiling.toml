@@ -1,0 +1,36 @@
+# Profiling split: selected Bokmål authors excluding the configured attribution authors.
+# Generated artifacts can be reused by downstream profiling and attribution stages.
+
+[split]
+name = "bokmal_profiling"
+experiment_name = "split_bokmal_profiling"
+selection_seed = 42
+
+[data]
+source_dataset = "data/clean/stortinget_bokmal_only.csv"
+splits_dir = "data/splits"
+results_dir = "results/splits"
+
+[exclusion]
+# Authors in this file are unconditionally excluded from the profiling pool.
+attribution_authors_path = "data/splits/bokmal_authorwise/authors.csv"
+
+[outer_split]
+strategy = "grouped_authors"
+
+[folds]
+mode = "stratified_group_kfold"
+n_splits = 5
+stratify_by = "party"
+
+[pool]
+party_mode = "all"
+language_mode = "bokmal_only"
+bokmal_codes = ["Bokmål"]
+min_authors_per_party = 0
+
+[selection]
+# Take every eligible non-excluded author.
+mode = "all_eligible"
+ranking_metric = "total_chars_all"
+strategy = "top_chars"

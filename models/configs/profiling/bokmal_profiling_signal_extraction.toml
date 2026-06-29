@@ -1,0 +1,18 @@
+[data]
+splits_dir = "data/splits"
+artifacts_dir = "models/artifacts/profiling"
+profiling_results_dir = "results/models"
+
+[source]
+attribution_split_name = "bokmal_authorwise"
+profiling_split_name = "bokmal_profiling"
+profiling_materialization_name = "bokmal_profiling_char_word_stylo"
+profiling_experiment_name = "bokmal_profiling_linear_svm"
+profiling_seed = 42
+targets = ["party", "female", "age_bin", "left_center_right"]
+
+[stages.dev]
+attribution_materialization_name = "bokmal_authorwise_dev_char_word_stylo"
+
+[stages.final]
+attribution_materialization_name = "bokmal_authorwise_final_char_word_stylo"

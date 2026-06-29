@@ -1,0 +1,105 @@
+[experiment]
+kind = "baseline"
+seed = 42
+
+[materialization]
+config_path = "data_pipeline/configs/materializations/bokmal_authorwise_char_word_stylo.toml"
+
+[dev]
+experiment_name = "bokmal_authorwise_linear_svm"
+selection_metric = "macro_f1"
+save_prediction_top_k = 5
+n_jobs = 3
+
+[final]
+experiment_name = "bokmal_authorwise_final_linear_svm"
+save_prediction_top_k = 5
+n_jobs = 3
+selected_candidates_path = "results/models/bokmal_authorwise/bokmal_authorwise_linear_svm/seed_42/selected_candidates.json"
+
+[fit]
+max_iter = 20000
+tol = 0.0001
+dual = "auto"
+top_k = [3, 5]
+
+[search]
+C_values = [0.1, 1.0, 10.0]
+class_weights = ["none", "balanced"]
+
+[[conditions]]
+id = "char_only"
+label = "char_only"
+feature_set = "char_only"
+blocks = ["char"]
+normalize_rows = true
+
+[[conditions]]
+id = "word_only"
+label = "word_only"
+feature_set = "word_only"
+blocks = ["word"]
+normalize_rows = true
+
+[[conditions]]
+id = "stylo_only"
+label = "stylo_only"
+feature_set = "stylo_only"
+blocks = ["stylo"]
+normalize_rows = true
+
+[[conditions]]
+id = "char_word"
+label = "char_word"
+feature_set = "char_word"
+blocks = ["char", "word"]
+normalize_rows = true
+
+[[conditions]]
+id = "char_stylo_blocknorm"
+label = "char_stylo_blocknorm"
+feature_set = "char_stylo_blocknorm"
+blocks = ["char", "stylo"]
+normalize_rows = true
+normalize_each_block = true
+
+[[conditions]]
+id = "word_stylo_blocknorm"
+label = "word_stylo_blocknorm"
+feature_set = "word_stylo_blocknorm"
+blocks = ["word", "stylo"]
+normalize_rows = true
+normalize_each_block = true
+
+[[conditions]]
+id = "char_word_stylo"
+label = "char_word_stylo"
+feature_set = "char_word_stylo"
+blocks = ["char", "word", "stylo"]
+normalize_rows = true
+
+[[conditions]]
+id = "char_word_stylo_blocknorm"
+label = "char_word_stylo_blocknorm"
+feature_set = "char_word_stylo_blocknorm"
+blocks = ["char", "word", "stylo"]
+normalize_rows = true
+normalize_each_block = true
+
+[[conditions]]
+id = "char_word_stylo_half_stylo"
+label = "char_word_stylo_half_stylo"
+feature_set = "char_word_stylo_half_stylo"
+blocks = ["char", "word", "stylo"]
+normalize_rows = true
+normalize_each_block = true
+block_weights = { char = 1.0, word = 1.0, stylo = 0.5 }
+
+[[conditions]]
+id = "char_word_stylo_downweighted"
+label = "char_word_stylo_downweighted"
+feature_set = "char_word_stylo_downweighted"
+blocks = ["char", "word", "stylo"]
+normalize_rows = true
+normalize_each_block = true
+block_weights = { char = 1.0, word = 1.0, stylo = 0.25 }

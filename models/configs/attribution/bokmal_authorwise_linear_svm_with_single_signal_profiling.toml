@@ -1,0 +1,63 @@
+[experiment]
+kind = "baseline"
+seed = 42
+
+[materialization]
+config_path = "data_pipeline/configs/materializations/bokmal_authorwise_char_word_stylo.toml"
+
+[dev]
+experiment_name = "bokmal_authorwise_linear_svm_with_single_signal_profiling"
+selection_metric = "macro_f1"
+save_prediction_top_k = 5
+n_jobs = 3
+
+[final]
+experiment_name = "bokmal_authorwise_final_linear_svm_with_single_signal_profiling"
+save_prediction_top_k = 5
+n_jobs = 3
+selected_candidates_path = "results/models/bokmal_authorwise/bokmal_authorwise_linear_svm_with_single_signal_profiling/seed_42/selected_candidates.json"
+
+[fit]
+max_iter = 20000
+tol = 0.0001
+dual = "auto"
+top_k = [3, 5]
+
+[search]
+C_values = [10.0]
+class_weights = ["balanced"]
+
+[profiling_source]
+profiling_split_name = "bokmal_profiling"
+profiling_materialization_name = "bokmal_profiling_char_word_stylo"
+profiling_experiment_name = "bokmal_profiling_linear_svm"
+profiling_seed = 42
+targets = ["party", "female", "age_bin", "left_center_right"]
+
+[[conditions]]
+id = "char_word_profiling_female"
+label = "char_word_profiling_female"
+feature_set = "char_word_profiling_female"
+blocks = ["char", "word", "profiling_female"]
+normalize_rows = true
+
+[[conditions]]
+id = "char_word_profiling_age_bin"
+label = "char_word_profiling_age_bin"
+feature_set = "char_word_profiling_age_bin"
+blocks = ["char", "word", "profiling_age_bin"]
+normalize_rows = true
+
+[[conditions]]
+id = "char_word_profiling_left_center_right"
+label = "char_word_profiling_left_center_right"
+feature_set = "char_word_profiling_left_center_right"
+blocks = ["char", "word", "profiling_left_center_right"]
+normalize_rows = true
+
+[[conditions]]
+id = "char_word_profiling_party"
+label = "char_word_profiling_party"
+feature_set = "char_word_profiling_party"
+blocks = ["char", "word", "profiling_party"]
+normalize_rows = true

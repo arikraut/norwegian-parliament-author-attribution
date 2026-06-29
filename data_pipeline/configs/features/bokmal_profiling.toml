@@ -1,0 +1,26 @@
+[feature]
+name = "bokmal_profiling"
+split_name = "bokmal_profiling"
+spacy_model = "nb_core_news_sm"
+
+[data]
+splits_dir = "data/splits"
+results_dir = "results/features"
+
+[targets]
+save_author_labels = false
+profiling_labels = ["party", "age", "age_bin", "female", "left_center_right"]
+
+[age_bins]
+edges = [0, 50, 200]
+labels = ["<50", "50+"]
+
+[party_axis]
+left   = ["Ap", "SV", "R"]
+center = ["Sp", "V", "KrF", "Kp", "MDG"]
+right  = ["H", "FrP"]
+
+[stylometry]
+enabled = true
+batch_size = 64
+low_variance_threshold_for_report = 1e-12

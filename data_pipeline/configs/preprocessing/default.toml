@@ -1,0 +1,77 @@
+[paths]
+input = "data/NPD_v1.csv"
+majority_output = "data/clean/stortinget_majority_language_only.csv"
+dataset_results_dir = "results/dataset"
+
+[pipeline]
+min_words = 150
+min_election_year = 2001
+small_party_min_word_pct = 5.0
+supported_languages = ["Bokmål", "Nynorsk"]
+majority_language_tie_breaker = "Nynorsk"
+
+[[language_outputs]]
+name = "bokmal_only"
+language = "Bokmål"
+path = "data/clean/stortinget_bokmal_only.csv"
+dataset_results_dir = "results/dataset_bokmal"
+
+[[language_outputs]]
+name = "nynorsk_only"
+language = "Nynorsk"
+path = "data/clean/stortinget_nynorsk_only.csv"
+
+[schema]
+final_columns = [
+    "date",
+    "time",
+    "election",
+    "id_speech",
+    "id_person",
+    "name",
+    "age",
+    "female",
+    "party",
+    "partyname",
+    "language",
+    "text",
+]
+profile_required_columns = ["age", "party"]
+
+[procedural]
+status_column = "status"
+procedural_column = "procedural"
+excluded_statuses = ["president", "presidenten"]
+
+[deduplication]
+key_columns = ["id_person", "date", "time", "text"]
+
+[redaction]
+name_token = "<NAME>"
+party_token = "<PARTY>"
+name_columns = ["name", "name_original"]
+name_part_min_length = 2
+# Short codes such as H, R, and V are omitted because they are too short to
+# redact safely without replacing ordinary Norwegian words or letters.
+party_codes = ["Ap", "FrP", "KrF", "Kp", "MDG", "Pf", "SV", "Sp"]
+
+[redaction.party_aliases_by_code]
+ap = ["Arbeiderpartiet", "Arbeidarpartiet"]
+frp = ["Fremskrittspartiet", "Framstegspartiet"]
+h = ["Høyre", "Høgre"]
+krf = ["Kristelig Folkeparti", "Kristeleg Folkeparti"]
+kp = ["Kystpartiet"]
+mdg = ["Miljøpartiet De Grønne", "Miljøpartiet Dei Grøne"]
+pf = ["Pasientfokus"]
+r = ["Rødt", "Raudt"]
+sp = ["Senterpartiet"]
+sv = ["Sosialistisk Venstreparti"]
+v = ["Venstre"]
+
+[metadata.manual_party_fixes]
+"fremskrittspartiet" = "FrP"
+"rødt" = "R"
+"miljøpartiet de grønne" = "MDG"
+"pasientfokus" = "Pf"
+"kystpartiet" = "Kp"
+"arbeiderpartiet" = "Ap"

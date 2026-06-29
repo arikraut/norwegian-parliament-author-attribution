@@ -1,0 +1,105 @@
+# PROFILING MODEL CONFIGURATION TEMPLATE
+# ========================================
+# Controls training of demographic/political classifiers on the profiling split.
+# One calibrated LinearSVC is trained per target. Calibration (sigmoid / Platt scaling)
+# is always applied — probability outputs feed into Phase 3 attribution as auxiliary signals.
+
+[experiment]
+# Unique name for this profiling experiment.
+name = "bokmal_profiling_linear_svm"
+seed = 42
+# Metric used to select the best hyperparameter configuration per target.
+# Recommended with author-balanced evaluation: "author_weighted_macro_f1".
+# Other available options include "macro_f1", "accuracy", and "weighted_f1".
+selection_metric = "author_weighted_macro_f1"
+# Number of top predictions saved per speech (for top-k reporting).
+save_prediction_top_k = 3
+# Number of parallel workers used during candidate search and calibrated refit.
+# -1 uses all available CPU cores. Reduce on memory-constrained machines
+# (e.g. cluster nodes): each worker loads one unit's full feature matrices
+# independently, so peak RAM ≈ n_jobs × per-unit matrix size.
+# The profiling corpus is typically much larger than the attribution corpus.
+n_jobs = 3
+
+[data]
+splits_dir = "data/splits"
+results_dir = "results/models"
+artifacts_dir = "models/artifacts/profiling"
+
+[source]
+# The profiling split bundle.
+split_name = "bokmal_profiling"
+# The materialized feature set for the profiling split.
+materialization_name = "bokmal_profiling_char_word_stylo"
+# Which fold units to run on.
+units = "all"
+
+# Which demographic/political targets to train classifiers for.
+# Options: "party", "female", "age_bin", "left_center_right"
+targets = ["party", "female", "age_bin", "left_center_right"]
+
+[model]
+# Model family. Only "linear_svm" is supported.
+family    = "linear_svm"
+# Candidate regularisation strengths swept during cross-validation.
+C_values  = [0.03, 0.1, 0.3, 1.0]
+# Candidate class-weight settings. Use "none" or "balanced".
+class_weights = ["balanced"]
+max_iter  = 20000
+tol       = 0.0001
+dual      = "auto"
+
+[author_balance]
+# Balance prolific and sparse authors during training and validation reporting.
+train_sample_weighting = "inverse_author_speech_count"
+normalize_train_weights = true
+report_author_weighted_eval = true
+
+# Feature block combinations to evaluate.
+[[feature_sets]]
+name = "char_word"
+blocks = ["char", "word"]
+normalize_rows = true
+
+[[feature_sets]]
+name = "char_word_blocknorm"
+blocks = ["char", "word"]
+normalize_rows = true
+normalize_each_block = true
+
+[[feature_sets]]
+name = "stylo"
+blocks = ["stylo"]
+normalize_rows = true
+
+[[feature_sets]]
+name = "char_word_stylo_downweighted"
+blocks = ["char", "word", "stylo"]
+normalize_rows = true
+normalize_each_block = true
+block_weights = { stylo = 0.25 }
+
+# Related signal configs in this folder use a different schema:
+#
+# Predicted profiling signal extraction:
+# [data]
+# splits_dir = "data/splits"
+# artifacts_dir = "models/artifacts/profiling"
+# profiling_results_dir = "results/models"
+#
+# [source]
+# attribution_split_name = "bokmal_authorwise"
+# profiling_split_name = "bokmal_profiling"
+# profiling_materialization_name = "bokmal_profiling_char_word_stylo"
+# profiling_experiment_name = "bokmal_profiling_linear_svm"
+# profiling_seed = 42
+# targets = ["party", "female", "age_bin", "left_center_right"]
+#
+# [stages.dev]
+# attribution_materialization_name = "bokmal_authorwise_dev_char_word_stylo"
+#
+# [stages.final]
+# attribution_materialization_name = "bokmal_authorwise_final_char_word_stylo"
+#
+# Ground-truth oracle injection uses [data].splits_dir, [source].attribution_split_name,
+# [source].targets, and the same [stages.*].attribution_materialization_name keys.

@@ -1,0 +1,41 @@
+# Phase 1B smoke config: dev-only staged stacked baseline.
+
+[experiment]
+kind = "stacked"
+seed = 42
+
+[materialization]
+config_path = "data_pipeline/configs/materializations/bokmal_authorwise_smoke.toml"
+
+[dev]
+experiment_name = "bokmal_authorwise_smoke_stacked"
+selection_metric = "macro_f1"
+save_prediction_top_k = 3
+n_jobs = 3
+
+[fit]
+inner_cv = 2
+max_iter = 20000
+tol = 0.0001
+dual = "auto"
+top_max_iter = 100
+top_k = [3]
+
+[search]
+base_c_values = [1.0]
+class_weights = ["balanced"]
+top_c_values = [1.0]
+
+[[families]]
+name = "char"
+blocks = ["char"]
+
+[[families]]
+name = "word"
+blocks = ["word"]
+
+[[conditions]]
+id = "char_word"
+label = "char_word"
+families = ["char", "word"]
+profiling_blocks = []

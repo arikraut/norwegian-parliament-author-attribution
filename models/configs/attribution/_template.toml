@@ -1,0 +1,123 @@
+# ATTRIBUTION MODEL CONFIGURATION TEMPLATE
+# ========================================
+# Staged attribution configs reference materialized feature configs instead of
+# duplicating split/materialization names or feature-building internals.
+# kind = "baseline" uses direct LinearSVC candidates from [[conditions]].
+# kind = "stacked" uses reusable [[families]] plus stacked [[conditions]].
+
+[experiment]
+kind = "baseline"
+seed = 42
+
+# Optional overrides. Defaults are shown here.
+# [data]
+# splits_dir = "data/splits"
+# results_dir = "results/models"
+# artifacts_dir = "models/artifacts/attribution"
+#
+# [source]
+# target = "author"
+# units = "all"
+
+[materialization]
+config_path = "data_pipeline/configs/materializations/bokmal_authorwise_char_word_stylo.toml"
+
+[dev]
+experiment_name = "bokmal_authorwise_linear_svm"
+selection_metric = "macro_f1"
+save_prediction_top_k = 5
+n_jobs = 3
+
+[final]
+experiment_name = "bokmal_authorwise_final_linear_svm"
+save_prediction_top_k = 5
+n_jobs = 3
+# Final stages load the selected_candidates.json written by the corresponding dev run.
+selected_candidates_path = "results/models/bokmal_authorwise/bokmal_authorwise_linear_svm/seed_42/selected_candidates.json"
+
+[fit]
+max_iter = 20000
+tol = 0.0001
+dual = "auto"
+top_k = [3, 5]
+# Stacked-only fit fields:
+# inner_cv = 3
+# top_max_iter = 1000
+
+[search]
+# Baseline search grid:
+C_values = [0.1, 1.0, 10.0]
+class_weights = ["none", "balanced"]
+# Stacked search grid replaces C_values with:
+# base_c_values = [0.1, 1.0, 10.0]
+# top_c_values = [0.1, 1.0, 10.0]
+
+# Optional source for predicted profiling blocks:
+#   "profiling" loads all configured targets as probabilities
+#   "profiling_<target>" loads one probability block
+#   "profiling_hard" / "profiling_hard_<target>" load one-hot argmax blocks
+#
+# [profiling_source]
+# profiling_split_name = "bokmal_profiling"
+# profiling_materialization_name = "bokmal_profiling_char_word_stylo"
+# profiling_experiment_name = "bokmal_profiling_linear_svm"
+# profiling_seed = 42
+# targets = ["party", "female", "age_bin", "left_center_right"]
+
+# Optional source for ground-truth oracle profiling blocks:
+#   "profiling_oracle" loads all configured targets as one-hot oracle blocks
+#   "profiling_oracle_<target>" loads one target
+#
+# [oracle_source]
+# config_path = "models/configs/profiling/bokmal_ground_truth_signal_injection.toml"
+
+[[conditions]]
+id = "char_word"
+label = "char_word"
+feature_set = "char_word"
+blocks = ["char", "word"]
+normalize_rows = true
+
+[[conditions]]
+id = "char_word_stylo"
+label = "char_word_stylo"
+feature_set = "char_word_stylo"
+blocks = ["char", "word", "stylo"]
+normalize_rows = true
+
+[[conditions]]
+id = "char_word_stylo_downweighted"
+label = "char_word_stylo_downweighted"
+feature_set = "char_word_stylo_downweighted"
+blocks = ["char", "word", "stylo"]
+normalize_rows = true
+normalize_each_block = true
+block_weights = { char = 1.0, word = 1.0, stylo = 0.25 }
+
+# Stacked configs use [[families]] and condition-level family references instead
+# of baseline feature_set/blocks entries. Conditions select and evaluate their
+# profiling_blocks independently.
+#
+# [[families]]
+# name = "char"
+# blocks = ["char"]
+#
+# [[families]]
+# name = "word"
+# blocks = ["word"]
+#
+# [[families]]
+# name = "stylo"
+# blocks = ["stylo"]
+#
+# [[conditions]]
+# id = "char_word__profiling_none"
+# label = "char_word__profiling_none"
+# families = ["char", "word"]
+# profiling_blocks = []
+#
+# [[conditions]]
+# id = "char_word__profiling_party"
+# label = "char_word__profiling_party"
+# families = ["char", "word"]
+# profiling_blocks = ["profiling_party"]

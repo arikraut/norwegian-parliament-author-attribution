@@ -1,0 +1,55 @@
+# FEATURE CONFIGURATION TEMPLATE
+# ================================
+# Controls row-level feature extraction: spaCy stylometry and target labels.
+# Features are extracted once per split and reused across all materialization
+# experiments — this stage has no fold-specific fitting.
+
+[feature]
+# Unique name for this feature set. Used as the directory name under
+# data/splits/<split_name>/row_features/.
+name = "bokmal_authorwise"
+# Name of the split bundle to extract features from.
+# Must match an existing entry under data/splits/.
+split_name = "bokmal_authorwise"
+# spaCy language model to use when stylometry is enabled.
+# The Norwegian Bokmål model is "nb_core_news_sm".
+spacy_model = "nb_core_news_sm"
+
+[data]
+# Root directory for split bundles.
+splits_dir = "data/splits"
+# Root directory for feature generation reports.
+results_dir = "results/features"
+
+[targets]
+# Whether to save author identity as a label column (needed for attribution).
+# Set to false for profiling splits where author ID is not a target.
+save_author_labels = true
+# Which demographic/political attributes to extract as additional label columns.
+# These are used to train profiling classifiers (Phase 2).
+# Supported labels include "party", "age", "age_bin", "female", "language",
+# and "left_center_right". Active configs omit "language" from profiling runs.
+profiling_labels = ["party", "age", "age_bin", "female", "left_center_right"]
+
+[age_bins]
+# Bin edges (inclusive left, exclusive right) for the age_bin label.
+# The example below creates two bins: "<50" and "50+".
+edges = [0, 50, 200]
+# Labels for each bin. Must have exactly len(edges) - 1 entries.
+labels = ["<50", "50+"]
+
+[party_axis]
+# Party abbreviation lists used to build the "left_center_right" label.
+# Parties not listed here are assigned the label "unknown".
+left   = ["Ap", "SV", "R"]
+center = ["Sp", "V", "KrF", "Kp", "MDG"]
+right  = ["H", "FrP"]
+
+[stylometry]
+# Whether to create row-level stylometry artifacts for this feature bundle.
+enabled = true
+# Number of speeches processed per spaCy batch. Reduce if memory is tight.
+batch_size = 64
+# Columns whose variance falls below this threshold are flagged in the quality
+# report (but not dropped here — dropping happens during materialization).
+low_variance_threshold_for_report = 1e-12

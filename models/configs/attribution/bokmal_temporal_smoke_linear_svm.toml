@@ -1,0 +1,36 @@
+[experiment]
+kind = "baseline"
+seed = 42
+
+[materialization]
+config_path = "data_pipeline/configs/materializations/bokmal_temporal_smoke.toml"
+
+[dev]
+experiment_name = "bokmal_temporal_smoke_linear_svm"
+selection_metric = "macro_f1"
+save_prediction_top_k = 3
+n_jobs = 3
+
+[fit]
+max_iter = 20000
+tol = 0.0001
+dual = "auto"
+top_k = [3]
+
+[search]
+C_values = [0.1, 1.0]
+class_weights = ["none", "balanced"]
+
+[[conditions]]
+id = "char_word"
+label = "char_word"
+feature_set = "char_word"
+blocks = ["char", "word"]
+normalize_rows = true
+
+[[conditions]]
+id = "char_word_stylo"
+label = "char_word_stylo"
+feature_set = "char_word_stylo"
+blocks = ["char", "word", "stylo"]
+normalize_rows = true
